@@ -80,16 +80,15 @@ map = {
 function initialize() {
   point = new THREE.Vector2(0, 0);
   initAngle = 0;
-  //Branch
+  //Koch Curve
   map = {
     atom: "F",
-    F: "FF-[-F+F+F]+[+F-F-F]",
-    // F: "FF[+F]-F",
+    F: "F-F++F-F",
     X: "",
     Y: "",
-    angle: 22,
+    angle: 60,
   };
-  order = 1;
+  order = 3;
   t = new Turtle(point, initAngle);
   var text = t.produceString(map.atom, map, order);
   scene.add(t.drawString(text, map.angle));
