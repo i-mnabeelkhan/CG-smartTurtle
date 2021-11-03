@@ -1,7 +1,7 @@
 var camera, renderer, controls;
 class factory {
     constructor(pox, poy, poz, len) {
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
         camera.position.set(pox, poy, poz).setLength(len);
         this.render();
         this.controls();

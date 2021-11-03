@@ -10,7 +10,12 @@ initialize();
 animate();
 
 //Declare or Initialize variables here..
-var point, initAngle, t, map, order;
+var point, initAngle, ninjaTurtle, map, order;
+
+//-------------------------------------------------------------------------------
+//HERE ALL MAPS ARE DEFINED FOR DIFFERENT SHAPES, just paste the map in the init function
+//-------------------------------------------------------------------------------
+
 //Koch Curve
 map = {
   atom: "F",
@@ -75,23 +80,53 @@ map = {
   Y: "YFXFY-F-XFYFX+F+YFXFY",
   angle: 90,
 };
+//Branch
+map = {
+  atom: "F",
+  F: "FF-[-F+F+F]+[+F-F-F]",
+  X: "",
+  Y: "",
+  angle: 20,
+};
+//ANOTHER BRANCH
+map = {
+  atom: "X",
+  F: "FF",
+  X: "F-[[X]+X]+F[+FX]-X",
+  Y: "",
+  angle: 22,
+};
 
-//Code your logic here..
+//==============================================================================
+//====================== ENTRY POINT FOR YOUR SCENE ============================
+//==============================================================================
 function initialize() {
   point = new THREE.Vector2(0, 0);
-  initAngle = 0;
-  //Koch Curve
+
+  //INITiAL ANGEL FOR THE CURVE
+  initAngle = 90;
+
+  //Branch
   map = {
     atom: "F",
-    F: "F-F++F-F",
+    F: "FF-[-F+F+F]+[+F-F-F]",
     X: "",
     Y: "",
-    angle: 60,
+    angle: 20,
   };
-  order = 3;
-  t = new Turtle(point, initAngle);
-  var text = t.produceString(map.atom, map, order);
-  scene.add(t.drawString(text, map.angle));
+
+  //ITERATION COUNTER
+  order = 5;
+
+  //NINJA TURTLE
+  ninjaTurtle = new Turtle(point, initAngle);
+
+  //GETTING PRODUCED STRING
+  var string = ninjaTurtle.produceString(map.atom, map, order);
+  console.log(string);
+
+  //RENDERING THE STRING
+  scene.add(ninjaTurtle.drawString(string, map.angle));
 }
 
 function animate() {

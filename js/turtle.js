@@ -5,11 +5,16 @@ class Turtle {
     this.CP = CP;
     //CURRENT ANGLE
     this.CD = CD;
-    //TURTLE STATE
+    //TURTLE STATE - CP, CD, STEP WIDTH
     this.state = { CP: this.CP, CD: this.CD, stepWidth: (this.stepWidth = 1) };
     //TURTLE MEMORY
-    this.memory = [];
-    // this.memory.push(this.state);
+    this.turtleStack = [];
+    this.turtleStack.push(this.state);
+    //BOOLEANS FOR TURTLE PATH
+    //saving incoming bracket [
+    this.saveBracket = true;
+    //saving incoming point CP with CD
+    this.savePoint = false;
     //CURRENT PATHS
     this.path = new THREE.Path();
     this.path.moveTo(this.CP.x, this.CP.y);
@@ -19,35 +24,55 @@ class Turtle {
     this.line = new THREE.Line(this.geometry, this.material);
     console.log(this);
   }
+  
   //SET STATE
   setCurrentState(state) {
     this.state = { CP: state.CP, CD: state.CD, stepWidth: state.stepWidth };
     this.CP = this.state.CP;
     this.CD = this.state.CD;
   }
+  
   //UPDATE STATE
   updateState() {
     this.state = { CP: this.CP, CD: this.CD, stepWidth: (this.stepWidth = 1) };
     this.CP = this.state.CP;
     this.CD = this.state.CD;
   }
+  
   //SAVE TURTLE
   saveTurtle() {
-    this.memory.push(this.state);
-    this.updateState();
-    console.log("SSSS ", this.state);
+    //if the current character is [ then push the current state to the stack with the current character i.e [
+    if (this.saveBracket) {
+      // console.log("Saving Bracket");
+      this.turtleStack.push("[");
+      this.saveBracket = false;
+    }
+    this.turtleStack.push(this.state);
   }
+
   //RESTORE TURTLE
   restoreTurtle() {
-    let lastState = this.memory.pop();
-    this.setCurrentState(lastState);
-
-    // this.path.moveTo(2, 0);
-    // this.path.currentPoint= {x: 0, y: 0};
-    console.log("LLL", lastState);
-    console.log("CCC", this.state);
-    console.log(this.path.moveTo(lastState.CP.x, lastState.CP.y));
+    //looping array in reverse order for back tracking
+    for (let i = this.turtleStack.length - 1; i >= 0; i--) {
+      //if the opening of the bracket is found then break
+      if (this.turtleStack[i] == "[") {
+        this.turtleStack.pop();
+        if (i == 0) {
+          //when reached the end of stack then do not save upcoming points
+          this.savePoint = false;
+        }
+        break;
+      }
+      let lastState = this.turtleStack.pop();
+      // console.log("This CP Before Line", this.CP);
+      this.path.lineTo(lastState.CP.x, lastState.CP.y);
+      this.setCurrentState(lastState);
+      // console.log("Last CP ", lastState.CP.x, " ", lastState.CP.y + " ");
+      // console.log("This CP After Line", this.CP);
+    }
+    this.saveBracket = true;
   }
+
   //TURNING TO A SPECIFIC ANGLE
   turnTo(angle) {
     this.CD = angle;
@@ -85,19 +110,6 @@ class Turtle {
     this.updateState();
     // console.log(this.CP);
   }
-  //MOVING FORWARD TO A DISTANCE
-  moveForwardFromAPoint(CP, dist, isVisible) {
-    //moving back to the point
-    this.path.moveTo(CP.x, CP.y);
-    let radPerDeg = 0.017453393;
-    let x = this.CP.x + dist * Math.cos(radPerDeg * this.CD);
-    let y = this.CP.y + dist * Math.sin(radPerDeg * this.CD);
-    if (isVisible) this.path.lineTo(x, y);
-    else this.path.moveTo(x, y);
-    this.CP = new THREE.Vector2(x, y);
-    this.updateState();
-    // console.log(this.CP);
-  }
 
   //PRODUCE STRING ACCORDING TO GIVEN RULE SET AND ITERATION
   produceString(atom, ruleSet, iterations) {
@@ -108,11 +120,11 @@ class Turtle {
     atom = atom.split("");
     // console.log(atom);
     for (let i = 0; i < iterations; i++) {
-      // console.log(i);
+      // console.log("Iteration: ", i);
       for (atomPos = 0; atomPos < atom.length; ) {
         char = atom[atomPos];
         // console.log("char: ", char);
-        if (char == "+" || char == "-") {
+        if (char == "+" || char == "-" || char == "[" || char == "]") {
           atomPos++;
           continue;
         }
@@ -132,19 +144,22 @@ class Turtle {
   drawString(str, angle) {
     // console.log("String: ", str);
     str = str.toUpperCase();
+
     for (let ch of str) {
       // console.log("Char: ", str[i], " CD: ", this.CD);
+
       if (ch == "+") {
-        // this.turnRight(this.CD);
-        this.turn(-angle);
+        this.turnRight(angle);
       } else if (ch == "-") {
-        // this.turnLeft(this.CD);
-        this.turn(angle);
+        this.turnLeft(angle);
       } else if (ch == "[") {
+        this.saveBracket = true;
+        this.savePoint = true;
         this.saveTurtle();
       } else if (ch == "]") {
         this.restoreTurtle();
       } else if (ch == "F") {
+        if (this.savePoint) this.turtleStack.push(this.state);
         this.moveForward(1, 1);
       }
     }
@@ -156,9 +171,8 @@ class Turtle {
     this.path.moveTo(this.CP.x, this.CP.y);
     this.points = this.path.getPoints();
     this.geometry = this.geometry.setFromPoints(this.points);
-    // this.material = new THREE.LineBasicMaterial({ color: 0xffffff });
+    this.material = new THREE.LineBasicMaterial({ color: 0xffffff });
     this.line = new THREE.Line(this.geometry, this.material);
-    // return this.line;
     return this.line;
   }
 }
